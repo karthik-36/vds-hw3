@@ -20,18 +20,20 @@ function checkKey(e) {
     e = e || window.event;
 
     if (e.keyCode == '38') {
+        e.preventDefault();
         if(z < 5){
             z = z + 0.01;  
         }
     }
     else if (e.keyCode == '40') {
+        e.preventDefault();
         if(z > -5){
             z = z - 0.01;
         }     
     }
     else if (e.keyCode == '37') {
    
-
+        e.preventDefault();
         rotateObject(particles, 0, +1, 0);
 
         let svg2 = document.getElementById('my_dataviz');
@@ -41,6 +43,8 @@ function checkKey(e) {
     }
     else if (e.keyCode == '39') {
         // right arrow
+
+        e.preventDefault();
         rotateObject(particles, 0, -1, 0);
         let svg2 = document.getElementById('my_dataviz');
         rotation++;
@@ -109,11 +113,11 @@ var createSideCircle = (z) => {
         .attr("cy", d => 350 + d.Y * 50)
         // .attr("cx", d => projection([d.long, d.lat])[0])
         // .attr("cy", d => projection([d.long, d.lat])[1])
-        .attr("r", 4)
+        .attr("r", 5)
         .style("fill", d => colors(d.concentration))
         // .attr("stroke", "#69b3a2")
         // .attr("stroke-width", 3)
-        .attr("fill-opacity", .8)
+        //.attr("fill-opacity", .8)
 
 
 
@@ -126,8 +130,8 @@ const createParticleSystem = (data) => {
     //console.log(data);
 
     
-    const geo = new THREE.SphereGeometry(0.1);
-    for (let i = 0; i < data.length; i = i + 10) {
+    const geo = new THREE.SphereGeometry(0.04);
+    for (let i = 0; i < data.length; i++) {
 
         // console.log(data[i]);
         const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
@@ -204,7 +208,7 @@ const loadData = (file) => {
 
         // draw the containment cylinder
         // TODO: Remove after the data has been rendered
-        createCylinder()
+        //createCylinder()
         // create the particle system
         createParticleSystem(data);
 
