@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<style>
+  .flex-parent {
+    display: flex;
+  }
+  .flex-child {
+    flex: 1;
+  }
+
+  html {
+    overflow: auto;
+  }
+</style>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>My first three.js app</title>
+    <link rel="shortcut icon" href="#" />
+    <script src="lib/js/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/paulmasson/threejs-with-controls@r121/build/three.min.js"></script>
+    <!-- <script src="/javascripts/OrbitControls.js"></script> -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <div class="parent flex-parent">
+      <div class="child flex-child"><canvas class="scene"></canvas></div>
+      <div class="child flex-child">
+        <svg id="my_dataviz" width="650" height="650"></svg>
+      </div>
+    </div>
+
+    <!-- Load d3.js and the geo projection plugin -->
+    <!-- <script src="https://d3js.org/d3.v4.js"></script> -->
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+    <!-- Create an element where the map will take place -->
+
+    <script src="src/js/scene.js"></script>
+
+    <script src="src/js/particleSystem.js"></script>
+  </body>
+</html>
