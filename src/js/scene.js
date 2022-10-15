@@ -1,7 +1,7 @@
 
 // Canvas
 
-alert("use (hold) arrow keys to move slider up and down ; rotate");
+//alert("use (hold) arrow keys to move slider up and down ; rotate");
 
 const canvas = document.querySelector('canvas.scene');
 var controls;

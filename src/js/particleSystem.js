@@ -1,14 +1,27 @@
 var data = [];
-const rand = (min, max) => min + Math.random() * (max - min)
-
-// bounds of the data
+var allParticles;
+var geo = new THREE.BufferGeometry;
 const bounds = {};
 var plane;
 var svg1 = d3.select("svg");
 
+
+var posArr = new Float32Array(data.length*3);
+var colors = new Float32Array(data.length*3);
+var color = new THREE.Color();
+
 var z = 0;
 
 var rotation = 0;
+
+var colorsRange = d3.scaleQuantize()
+    .domain([0, 367])
+    .range(["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598",
+        "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"]);
+
+var  colorsRangeGrey = d3.scaleQuantize()
+.domain([0, 367])
+.range(['#ffffff','#969696','#969696','#969696','#969696','#737373','#525252','#252525','#222222']);
 
 
 var particles = new THREE.Group()
@@ -34,7 +47,7 @@ function checkKey(e) {
     else if (e.keyCode == '37') {
    
         e.preventDefault();
-        rotateObject(particles, 0, +1, 0);
+        rotateObject(allParticles , 0, +1, 0);
 
         let svg2 = document.getElementById('my_dataviz');
         rotation--;
@@ -45,7 +58,7 @@ function checkKey(e) {
         // right arrow
 
         e.preventDefault();
-        rotateObject(particles, 0, -1, 0);
+        rotateObject(allParticles , 0, -1, 0);
         let svg2 = document.getElementById('my_dataviz');
         rotation++;
         svg2.style.transform
@@ -61,16 +74,13 @@ function checkKey(e) {
      updatePlane(z);
      createSideCircle(z);
 
-   
+     updateParticleColor(z);
 
    
 }
 
 
-var colors = d3.scaleQuantize()
-    .domain([0, 367])
-    .range(["#5E4FA2", "#3288BD", "#66C2A5", "#ABDDA4", "#E6F598",
-        "#FFFFBF", "#FEE08B", "#FDAE61", "#F46D43", "#D53E4F", "#9E0142"]);
+
 
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
@@ -111,53 +121,177 @@ var createSideCircle = (z) => {
         .join("circle")
         .attr("cx", d => 300 + d.X * 50)
         .attr("cy", d => 350 + d.Y * 50)
-        // .attr("cx", d => projection([d.long, d.lat])[0])
-        // .attr("cy", d => projection([d.long, d.lat])[1])
         .attr("r", 5)
-        .style("fill", d => colors(d.concentration))
-        // .attr("stroke", "#69b3a2")
-        // .attr("stroke-width", 3)
-        //.attr("fill-opacity", .8)
+        .style("fill", d => colorsRange(d.concentration))
 
 
 
 }
 
+const updateParticleColor = (z) => {
+
+    let x = 0;
+
+
+    for (let i = 0; i < data.length; i = i + 2){
+       
+        if(Math.abs(Math.round((data[i].Z - 5 + Number.EPSILON) * 100) / 100 - z) < 0.1){
+            color.set(colorsRange(data[i].concentration))
+        }else{
+            color.set(colorsRangeGrey(data[i].concentration))
+        }
+  
+        colors[x] = color.r
+        colors[x+1] = color.g
+        colors[x+2] = color.b
+
+        x = x + 3;
+    }
+
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    //data = data.filter((x) => {x})
+  
+}
+
 // creates the particle system
+
+// const createParticleSystem1 = (data) => {
+
+//     // draw your particle system here!
+    
+
+//     const geo = new THREE.BufferGeometry();
+//     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0,0,0]), 3));
+
+//     for (let i = 0; i < data.length; i = i++) {
+
+//         // console.log(data[i]);
+//         //const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
+//         const mat1 = new THREE.PointsMaterial({ size: 0.1, color: colors(data[i].concentration) });
+//        // const mat1 = new THREE.MeshBasicMaterial({ color: "rgb(150,150,150)" , opacity: 0.1 , transparent : true });
+//         const particle = new THREE.Points(geo, mat1)
+//         particle.position.x = data[i].X;
+//         particle.position.z = data[i].Y;
+//         particle.position.y = data[i].Z - 5;
+        
+//         particles.add(particle);
+//     }
+//     scene.add(particles);
+
+
+//     // const geo = new THREE.SphereGeometry(0.04);
+//     // for (let i = 0; i < data.length; i++) {
+
+//     //     // console.log(data[i]);
+//     //     const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
+//     //    // const mat1 = new THREE.MeshBasicMaterial({ color: "rgb(150,150,150)" , opacity: 0.1 , transparent : true });
+//     //     const particle = new THREE.Mesh(geo, mat1)
+//     //     particle.velocity = new THREE.Vector3(
+//     //         data[i].U,
+//     //         data[i].V,
+//     //         data[i].W)
+//     //     // particle.acceleration = new THREE.Vector3(0,-0.001,0)
+//     //     particle.position.x = data[i].X;
+//     //     particle.position.z = data[i].Y;
+//     //     particle.position.y = data[i].Z - 5;
+//     //     particles.add(particle)
+//     // }
+//     // scene.add(particles);
+
+// };
+
+
+
 const createParticleSystem = (data) => {
 
-    // draw your particle system here!
-    //console.log(data);
+    //  attribute once
+    
+    
+
+    let x = 0;
+    posArr = new Float32Array(data.length*3);
+    colors = new Float32Array(data.length*3);
 
     
-    const geo = new THREE.SphereGeometry(0.04);
-    for (let i = 0; i < data.length; i++) {
 
-        // console.log(data[i]);
-        const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
-        const particle = new THREE.Mesh(geo, mat1)
-        particle.velocity = new THREE.Vector3(
-            data[i].U,
-            data[i].V,
-            data[i].W)
-        // particle.acceleration = new THREE.Vector3(0,-0.001,0)
-        particle.position.x = data[i].X;
-        particle.position.z = data[i].Y;
-        particle.position.y = data[i].Z - 5;
-        particles.add(particle)
+    
+  
+    for (let i = 0; i < data.length; i = i + 2){
+       
+      //  if(Math.abs(Math.round((data[i].Z - 5 + Number.EPSILON) * 100) / 100 - z) < 0.1){
+            color.set(colorsRange(data[i].concentration))
+       // }else{
+       //     color.set(colorsRangeGrey(data[i].concentration))
+       // }
+  
+        colors[x] = color.r
+        colors[x+1] = color.g
+        colors[x+2] = color.b
+
+        posArr[x] = data[i].X
+        posArr[x+1] = data[i].Z - 5;
+        posArr[x+2] = data[i].Y
+        x = x + 3;
     }
-    scene.add(particles);
+
+    geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const particleMaterials = new THREE.PointsMaterial( {
+        transparent: true,
+        vertexColors: true,
+        size: 0.14,
+        opacity: 0.8
+    } );
+
+    allParticles = new THREE.Points(geo, particleMaterials)
+    scene.add(allParticles);
+
+    // geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0,0,0]), 3));
+
+    // for (let i = 0; i < data.length; i = i++) {
+
+    //     // console.log(data[i]);
+    //     //const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
+    //     const mat1 = new THREE.PointsMaterial({ size: 0.1, color: colors(data[i].concentration) });
+    //    // const mat1 = new THREE.MeshBasicMaterial({ color: "rgb(150,150,150)" , opacity: 0.1 , transparent : true });
+    //     const particle = new THREE.Points(geo, mat1)
+    //     particle.position.x = data[i].X;
+    //     particle.position.z = data[i].Y;
+    //     particle.position.y = data[i].Z - 5;
+
+    //     particles.add(particle);
+    // }
+    // scene.add(particles);
+
+
+    // const geo = new THREE.SphereGeometry(0.04);
+    // for (let i = 0; i < data.length; i++) {
+
+    //     // console.log(data[i]);
+    //     const mat1 = new THREE.MeshBasicMaterial({ color: colors(data[i].concentration) });
+    //    // const mat1 = new THREE.MeshBasicMaterial({ color: "rgb(150,150,150)" , opacity: 0.1 , transparent : true });
+    //     const particle = new THREE.Mesh(geo, mat1)
+    //     particle.velocity = new THREE.Vector3(
+    //         data[i].U,
+    //         data[i].V,
+    //         data[i].W)
+    //     // particle.acceleration = new THREE.Vector3(0,-0.001,0)
+    //     particle.position.x = data[i].X;
+    //     particle.position.z = data[i].Y;
+    //     particle.position.y = data[i].Z - 5;
+    //     particles.add(particle)
+    // }
+    // scene.add(particles);
 
 };
 
 const createPlane = (z) => {
 
-    // draw your particle system here!
-    //console.log(data);
-    console.log("planee");
 
     const geometry = new THREE.PlaneGeometry(13, 13);
-    const material = new THREE.MeshBasicMaterial({ color: "rgba(50,50,250)", side: THREE.DoubleSide, opacity: 0.8, transparent: true });
+    const material = new THREE.MeshBasicMaterial({ color: "rgba(50,50,250)", side : THREE.DoubleSide , opacity: 0.6, transparent: true });
     plane = new THREE.Mesh(geometry, material);
     z = 0;
 
@@ -173,8 +307,6 @@ const createPlane = (z) => {
 }
 
 const loadData = (file) => {
-
-    console.log("here");
 
     // read the csv file
     d3.csv(file).then(function (fileData)
@@ -215,11 +347,6 @@ const loadData = (file) => {
         createPlane();
 
         createSideCircle(0);
-
-
-
-
-
 
     })
 
